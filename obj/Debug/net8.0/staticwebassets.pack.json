@@ -1,0 +1,45 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\tejac\\OneDrive\\Desktop\\Projects\\Bus api\\BusBooking\\BusBooking.Server\\wwwroot\\images\\08671743-57f7-40c7-a73c-80c109f2d640.jpg",
+      "PackagePath": "staticwebassets\\images\\08671743-57f7-40c7-a73c-80c109f2d640.jpg"
+    },
+    {
+      "Id": "C:\\Users\\tejac\\OneDrive\\Desktop\\Projects\\Bus api\\BusBooking\\BusBooking.Server\\wwwroot\\images\\1054\\db77f465-932e-492d-bad4-377a3e87eaf3.jpg",
+      "PackagePath": "staticwebassets\\images\\1054\\db77f465-932e-492d-bad4-377a3e87eaf3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\tejac\\OneDrive\\Desktop\\Projects\\Bus api\\BusBooking\\BusBooking.Server\\wwwroot\\images\\8890553e-1705-4942-81ef-c37b21353cc3.jpg",
+      "PackagePath": "staticwebassets\\images\\8890553e-1705-4942-81ef-c37b21353cc3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\tejac\\OneDrive\\Desktop\\Projects\\Bus api\\BusBooking\\BusBooking.Server\\wwwroot\\images\\c9555afc-dbb5-4899-a069-1420d6f901a0.jpg",
+      "PackagePath": "staticwebassets\\images\\c9555afc-dbb5-4899-a069-1420d6f901a0.jpg"
+    },
+    {
+      "Id": "C:\\Users\\tejac\\OneDrive\\Desktop\\Projects\\Bus api\\BusBooking\\BusBooking.Server\\wwwroot\\images\\ed92fc77-55c7-4553-819d-1bb98506e039.jpg",
+      "PackagePath": "staticwebassets\\images\\ed92fc77-55c7-4553-819d-1bb98506e039.jpg"
+    },
+    {
+      "Id": "C:\\Users\\tejac\\OneDrive\\Desktop\\Projects\\Bus api\\BusBooking\\BusBooking.Server\\wwwroot\\images\\krishna pic-Teja.jpg",
+      "PackagePath": "staticwebassets\\images\\krishna pic-Teja.jpg"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.BusBooking.Server.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.BusBooking.Server.props",
+      "PackagePath": "build\\BusBooking.Server.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.BusBooking.Server.props",
+      "PackagePath": "buildMultiTargeting\\BusBooking.Server.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.BusBooking.Server.props",
+      "PackagePath": "buildTransitive\\BusBooking.Server.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
