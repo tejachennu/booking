@@ -19,6 +19,8 @@ public partial class Route
 
     public string? Stops { get; set; }
 
+    public string? DropStops { get; set; }
+
     public virtual ICollection<Journey> Journeys { get; set; } = new List<Journey>();
 
     public virtual TblUser? User { get; set; }

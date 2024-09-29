@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ICoNl0/RVywhXT2Nnp1m+69orfX0rhsp14XlIK+Nys9kMryxU1Caok2ySMivy/2t3WAH38d2TjbJ8NAmi1K0Uw==",
+  "dgSpecHash": "YETVV7yQu21Ba0FsGfVCFOzJ0/OCdvMitMWJM409ItmYeXVSwdU0BymTxPyqkL3yPP1IEp6+fEV6JhdEk6RKdA==",
   "success": true,
   "projectFilePath": "C:\\Users\\tejac\\OneDrive\\Desktop\\Projects\\Bus api\\BusBooking\\BusBooking.Server\\BusBooking.Server.csproj",
   "expectedPackageFiles": [
@@ -52,6 +52,7 @@
     "C:\\Users\\tejac\\.nuget\\packages\\mono.texttemplating\\2.2.1\\mono.texttemplating.2.2.1.nupkg.sha512",
     "C:\\Users\\tejac\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\tejac\\.nuget\\packages\\newtonsoft.json.bson\\1.0.2\\newtonsoft.json.bson.1.0.2.nupkg.sha512",
+    "C:\\Users\\tejac\\.nuget\\packages\\razorpay.core\\1.0.2\\razorpay.core.1.0.2.nupkg.sha512",
     "C:\\Users\\tejac\\.nuget\\packages\\swashbuckle.aspnetcore\\6.4.0\\swashbuckle.aspnetcore.6.4.0.nupkg.sha512",
     "C:\\Users\\tejac\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.4.0\\swashbuckle.aspnetcore.swagger.6.4.0.nupkg.sha512",
     "C:\\Users\\tejac\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.4.0\\swashbuckle.aspnetcore.swaggergen.6.4.0.nupkg.sha512",

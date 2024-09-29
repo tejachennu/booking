@@ -15,6 +15,8 @@ public partial class BusBookingContext : DbContext
     {
     }
 
+    public virtual DbSet<BookSeat> BookSeats { get; set; }
+
     public virtual DbSet<Bus> Buses { get; set; }
 
     public virtual DbSet<BusImage> BusImages { get; set; }
@@ -33,12 +35,55 @@ public partial class BusBookingContext : DbContext
 
     public virtual DbSet<TblUser> TblUsers { get; set; }
 
+    public virtual DbSet<Ticket> Tickets { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=TEJA\\SQLEXPRESS;Database=busBooking;Integrated Security=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<BookSeat>(entity =>
+        {
+            entity.HasKey(e => e.BookId).HasName("PK__BookSeat__490D1AE16BE20243");
+
+            entity.HasIndex(e => e.Pnr, "UQ__BookSeat__DD37C14D58813932").IsUnique();
+
+            entity.Property(e => e.BookId).HasColumnName("book_id");
+            entity.Property(e => e.DropPoint)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("drop_point");
+            entity.Property(e => e.Email)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("email");
+            entity.Property(e => e.JourneyId).HasColumnName("journeyId");
+            entity.Property(e => e.Phone)
+                .HasMaxLength(15)
+                .IsUnicode(false)
+                .HasColumnName("phone");
+            entity.Property(e => e.PickupPoint)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("pickup_point");
+            entity.Property(e => e.Pnr)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasDefaultValueSql("(right(CONVERT([varchar](10),abs(checksum(newid()))),(6)))")
+                .HasColumnName("pnr");
+            entity.Property(e => e.RazorpayOrderId)
+                .HasMaxLength(220)
+                .IsUnicode(false);
+            entity.Property(e => e.Status)
+                .HasMaxLength(220)
+                .IsUnicode(false)
+                .HasColumnName("status");
+            entity.Property(e => e.TotalCost)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("totalCost");
+        });
+
         modelBuilder.Entity<Bus>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Buses__3214EC07DE3A45D6");
@@ -85,15 +130,27 @@ public partial class BusBookingContext : DbContext
             entity.ToTable("Journey");
 
             entity.Property(e => e.JourneyId).HasColumnName("journeyId");
-            entity.Property(e => e.ArrivalDate).HasColumnName("arrival_date");
-            entity.Property(e => e.ArrivalTime).HasColumnName("arrival_time");
+            entity.Property(e => e.ArrivalDate)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("arrival_date");
+            entity.Property(e => e.ArrivalTime)
+                .HasMaxLength(18)
+                .IsUnicode(false)
+                .HasColumnName("arrival_time");
             entity.Property(e => e.BusId).HasColumnName("busId");
             entity.Property(e => e.BusNumber)
                 .HasMaxLength(30)
                 .IsUnicode(false)
                 .HasColumnName("busNumber");
-            entity.Property(e => e.DepartureDate).HasColumnName("departure_date");
-            entity.Property(e => e.DepartureTime).HasColumnName("departure_time");
+            entity.Property(e => e.DepartureDate)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("departure_date");
+            entity.Property(e => e.DepartureTime)
+                .HasMaxLength(18)
+                .IsUnicode(false)
+                .HasColumnName("departure_time");
             entity.Property(e => e.DriverName)
                 .HasMaxLength(100)
                 .IsUnicode(false)
@@ -150,6 +207,10 @@ public partial class BusBookingContext : DbContext
             entity.Property(e => e.Distance)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("distance");
+            entity.Property(e => e.DropStops)
+                .HasMaxLength(220)
+                .IsUnicode(false)
+                .HasColumnName("drop_stops");
             entity.Property(e => e.Duration)
                 .HasMaxLength(10)
                 .IsUnicode(false)
@@ -256,6 +317,45 @@ public partial class BusBookingContext : DbContext
             entity.Property(e => e.Role)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<Ticket>(entity =>
+        {
+            entity.HasKey(e => e.TicketId).HasName("PK__tickets__3333C6101045F005");
+
+            entity.ToTable("tickets");
+
+            entity.Property(e => e.TicketId).HasColumnName("ticketId");
+            entity.Property(e => e.BookId).HasColumnName("book_id");
+            entity.Property(e => e.Gender)
+                .HasMaxLength(1)
+                .IsUnicode(false)
+                .IsFixedLength()
+                .HasColumnName("gender");
+            entity.Property(e => e.Name)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("name");
+            entity.Property(e => e.RazorpayOrderId)
+                .HasMaxLength(220)
+                .IsUnicode(false);
+            entity.Property(e => e.ReservedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("reservedAt");
+            entity.Property(e => e.SeatNumber)
+                .HasMaxLength(5)
+                .IsUnicode(false)
+                .HasColumnName("seatNumber");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasDefaultValue("pending")
+                .HasColumnName("status");
+
+            entity.HasOne(d => d.Book).WithMany(p => p.Tickets)
+                .HasForeignKey(d => d.BookId)
+                .HasConstraintName("FK__tickets__book_id__6AEFE058");
         });
 
         OnModelCreatingPartial(modelBuilder);

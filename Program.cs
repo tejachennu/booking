@@ -38,6 +38,7 @@ namespace BusBooking.Server
 
             var _jwtsetting = builder.Configuration.GetSection("JWTSetting");
             builder.Services.Configure<JWTSetting>(_jwtsetting);
+            builder.Services.AddScoped<RazorpayService>();
 
             var authkey = builder.Configuration.GetValue<string>("JWTSetting:securitykey");
 

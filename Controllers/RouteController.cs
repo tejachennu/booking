@@ -28,6 +28,8 @@ namespace BusBooking.Server.Controllers
 
             public string? Stops { get; set; }
 
+            public string? DropStops { get; set; }
+
         }
 
         // Create Route
@@ -47,7 +49,9 @@ namespace BusBooking.Server.Controllers
                 DepartureCity = routeDto.DepartureCity,
                 Distance = routeDto.Distance,
                 Duration = routeDto.Duration,
-                Stops = routeDto.Stops
+                Stops = routeDto.Stops,
+                DropStops = routeDto.DropStops
+               
             };
 
             _context.Routes.Add(route);
@@ -82,7 +86,7 @@ namespace BusBooking.Server.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRoute(int id, [FromBody] RoutesDto routeDto)
+        public async Task<IActionResult> UpdateRoute(int id, [FromForm] Models.Route routeDto)
         {
             // Validate routeDto
             if (routeDto == null)
@@ -107,6 +111,7 @@ namespace BusBooking.Server.Controllers
             route.Distance = routeDto.Distance;
             route.Duration = routeDto.Duration;
             route.Stops = routeDto.Stops;
+            route.DropStops = routeDto.DropStops;
 
             try
             {
@@ -125,13 +130,30 @@ namespace BusBooking.Server.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRoute(int id)
         {
-            var route = await _context.Routes.FindAsync(id);
-            if (route == null) return NotFound();
+            try
+            {
+                var route = await _context.Routes.FindAsync(id);
+                if (route == null) return NotFound("Route not found.");
 
-            _context.Routes.Remove(route);
-            await _context.SaveChangesAsync();
-            return Ok();
+                // Check for any dependent entities (e.g., Journeys) before deleting the route
+                var hasRelatedJourneys = await _context.Journeys.AnyAsync(j => j.RouteId == id);
+                if (hasRelatedJourneys)
+                {
+                    return BadRequest("Cannot delete route, it is referenced by existing journeys.");
+                }
+
+                _context.Routes.Remove(route);
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging
+                Console.WriteLine($"Error deleting route: {ex.Message}");
+                return StatusCode(500, "Internal server error. Please try again later.");
+            }
         }
+
 
     }
 }
