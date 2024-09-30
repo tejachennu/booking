@@ -44,17 +44,26 @@ namespace BusBooking.Server.Controllers
             return await _context.BookSeats.Include(b => b.Tickets).ToListAsync();
         }
 
-        // GET: api/Journeys/Tickets/{journeyId}
+       
         [HttpGet("Tickets/{journeyId}")]
         public async Task<ActionResult<IEnumerable<Ticket>>> GetTicketsByJourneyId(int journeyId)
         {
             try
             {
+                var journey = await _context.Journeys
+                    .Where(b => b.JourneyId == journeyId).Include(b => b.Route).Include(b => b.Bus).ToListAsync();
+
                 // Find all bookings for the given journey
                 var bookedSeats = await _context.BookSeats
                     .Where(b => b.JourneyId == journeyId && b.Status == "booked")
                     .Include(b => b.Tickets) // Include related tickets
                     .ToListAsync();
+
+                var response = new
+                {
+                    journey,
+                    bookedSeats
+                };
 
                 if (bookedSeats == null || !bookedSeats.Any())
                 {
@@ -70,7 +79,7 @@ namespace BusBooking.Server.Controllers
                 }
 
                 // Return the tickets for the journey
-                return Ok(tickets);
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -97,30 +106,6 @@ namespace BusBooking.Server.Controllers
         }
 
 
-        // GET: api/Journeys/User/{userId}
-        [HttpGet("User/{userId}")]
-        public async Task<ActionResult<IEnumerable<Journey>>> GetJourneysByUserId(int userId)
-        {
-            try
-            {
-                // Fetch all journeys for the specific user
-                var journeys = await _context.Journeys
-                    .Where(j => j.UserId == userId)
-                    .ToListAsync();
-
-                if (journeys == null || !journeys.Any())
-                {
-                    return NotFound("No journeys found for the given user.");
-                }
-
-                return Ok(journeys);
-            }
-            catch (Exception ex)
-            {
-                // Handle any errors
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
 
 
         // GET: api/BookSeats/Order/{orderId}
@@ -204,6 +189,52 @@ namespace BusBooking.Server.Controllers
             catch (Exception ex)
             {
                 // Handle any errors
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [Route("admin")]
+        [HttpPost]
+        public async Task<ActionResult<BookSeat>> CreateBookingAdmin([FromBody] BookSeatsDto bookingDto)
+        {
+            if (bookingDto == null || !bookingDto.Seats.Any())
+            {
+                return BadRequest("Booking data is incomplete or no seats selected.");
+            }
+            try
+            {
+                var order = _razorpayService.CreateOrder(bookingDto.TotalCost, "INR");
+                // Create a new booking object
+                var booking = new BookSeat
+                {
+                    RazorpayOrderId = order["id"].ToString(),
+                    Status = "booked",
+                    JourneyId = bookingDto.JourneyId,
+                    TotalCost = bookingDto.TotalCost,
+                    Email = bookingDto.Email,
+                    Phone = bookingDto.Phone,
+                    PickupPoint = bookingDto.PickupPoint,
+                    DropPoint = bookingDto.DropPoint,
+                    Tickets = bookingDto.Seats.Select(seat => new Ticket
+                    {
+                        RazorpayOrderId = order["id"].ToString(),
+                        SeatNumber = seat.SeatNumber.ToString(),
+                        Name = seat.Name,
+                        Gender = seat.Gender,
+                        Status="booked"
+                    }).ToList()
+                };
+
+                // Add the booking to the database
+                _context.BookSeats.Add(booking);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { orderId = order["id"].ToString(), amount = order["amount"], currency = order["currency"] });
+
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging (you might want to log it to a file or monitoring system)
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }

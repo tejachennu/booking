@@ -13,11 +13,11 @@ public partial class Journey
 
     public int? UserId { get; set; }
 
-    public string? DepartureDate { get; set; }
+    public DateOnly? DepartureDate { get; set; }
 
     public string? DepartureTime { get; set; }
 
-    public string? ArrivalDate { get; set; }
+    public DateOnly? ArrivalDate { get; set; }
 
     public string? ArrivalTime { get; set; }
 

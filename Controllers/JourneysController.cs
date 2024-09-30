@@ -1,6 +1,8 @@
 ﻿using BusBooking.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using static BusBooking.Server.Controllers.BookSeatsController;
 
 
 namespace BusBooking.Server.Controllers
@@ -22,9 +24,9 @@ namespace BusBooking.Server.Controllers
             public int? BusId { get; set; }
             public int? RouteId { get; set; }
             public int? UserId { get; set; }
-            public string? DepartureDate { get; set; }
+            public DateOnly? DepartureDate { get; set; }
             public string? DepartureTime { get; set; }
-            public string? ArrivalDate { get; set; }
+            public DateOnly? ArrivalDate { get; set; }
             public string? ArrivalTime { get; set; }
             public string? Duration { get; set; }
             public decimal? Rating { get; set; }
@@ -60,21 +62,106 @@ namespace BusBooking.Server.Controllers
             return Ok(journey);
         }
 
-        // GET: api/Journeys/user/{userId}
+        //// GET: api/Journeys/user/{userId}
+        //[HttpGet("user/{userId}")]
+        //public async Task<ActionResult<IEnumerable<Journey>>> GetJourneysByUserId(int userId)
+        //{
+        //    var journeys = await _context.Journeys
+        //        .Where(j => j.UserId == userId)
+        //        .ToListAsync();
+
+        //    if (journeys == null || !journeys.Any())
+        //    {
+        //        return NotFound("No journeys found for the specified user.");
+        //    }
+
+        //    return journeys;
+        //}
+
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<IEnumerable<Journey>>> GetJourneysByUserId(int userId)
+        public async Task<ActionResult<IEnumerable<Journey>>> GetJourneysByUserId(
+            int userId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? startDate = null,
+            [FromQuery] string? endDate = null)
         {
-            var journeys = await _context.Journeys
-                .Where(j => j.UserId == userId)
-                .ToListAsync();
+            Console.WriteLine($"API called with User ID: {userId}");
 
-            if (journeys == null || !journeys.Any())
+            // Validate pageNumber and pageSize
+            if (pageNumber <= 0) pageNumber = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            try
             {
-                return NotFound("No journeys found for the specified user.");
-            }
+                // Fetch the journeys for the specific user
+                var query = _context.Journeys.AsQueryable()
+                    .Where(j => j.UserId == userId); // Filter by user ID
 
-            return journeys;
+                // Apply start date filtering if provided
+                if (!string.IsNullOrEmpty(startDate))
+                {
+                    if (DateOnly.TryParseExact(startDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly startDateParsed))
+                    {
+                        query = query.Where(j => j.DepartureDate.HasValue && j.DepartureDate.Value >= startDateParsed);
+                    }
+                    else
+                    {
+                        return BadRequest("Invalid start date format. Use 'yyyy-MM-dd'.");
+                    }
+                }
+
+                // Apply end date filtering if provided
+                if (!string.IsNullOrEmpty(endDate))
+                {
+                    if (DateOnly.TryParseExact(endDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly endDateParsed))
+                    {
+                        query = query.Where(j => j.DepartureDate.HasValue && j.DepartureDate.Value <= endDateParsed);
+                    }
+                    else
+                    {
+                        return BadRequest("Invalid end date format. Use 'yyyy-MM-dd'.");
+                    }
+                }
+
+                // Count the total number of journeys (before pagination)
+                var totalJourneys = await query.CountAsync();
+
+                // Apply pagination
+                var journeys = await query
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                if (journeys == null || !journeys.Any())
+                {
+                    return NotFound("No journeys found for the given user.");
+                }
+
+                // Create pagination metadata
+                var paginationMetadata = new
+                {
+                    totalCount = totalJourneys,
+                    pageSize,
+                    currentPage = pageNumber,
+                    totalPages = (int)Math.Ceiling(totalJourneys / (double)pageSize)
+                };
+
+                // Add pagination metadata to the response headers
+                Response.Headers.Add("X-Pagination", Newtonsoft.Json.JsonConvert.SerializeObject(paginationMetadata));
+
+                return Ok(journeys);
+            }
+            catch (Exception ex)
+            {
+                // Handle any unexpected errors
+                Console.WriteLine($"Internal server error: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
         }
+
+
+
 
         // GET: api/Journeys/5
         [HttpGet("{id}")]
@@ -164,26 +251,25 @@ namespace BusBooking.Server.Controllers
             return NoContent();
         }
 
-        // GET: api/Journeys/available-bus/{fromLocation}/{toLocation}/{date}
         [HttpGet("available-bus/{fromLocation}/{toLocation}/{date}")]
         public async Task<ActionResult<IEnumerable<Journey>>> GetAvailableJourneys(string fromLocation, string toLocation, string date)
         {
-            DateTime departureDate;
-
-            // Validate the date format
-            if (!DateTime.TryParse(date, out departureDate))
+            // Try to parse the input date
+            if (!DateTime.TryParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime departureDate))
             {
                 return BadRequest("Invalid date format. Please use a valid date (yyyy-MM-dd).");
             }
 
+            // Query available journeys by matching cities and departure date
             var availableJourneys = await _context.Journeys
-                .Include(j => j.Route) // Include the related Route entity
-                .Include(j => j.Bus)   // Include the related Bus entity
+                .Include(j => j.Route)  // Include the related Route entity
+                .Include(j => j.Bus)    // Include the related Bus entity
                 .Where(j => j.Route.DepartureCity == fromLocation
                             && j.Route.ArrivalCity == toLocation
-                            && j.DepartureDate == departureDate.ToString("yyyy-MM-dd"))
+                            && j.DepartureDate == DateOnly.FromDateTime(departureDate))  // Convert DateTime to DateOnly
                 .ToListAsync();
 
+            // Handle no results found
             if (availableJourneys == null || !availableJourneys.Any())
             {
                 return NotFound($"No journeys found from {fromLocation} to {toLocation} on {date}.");
@@ -191,6 +277,8 @@ namespace BusBooking.Server.Controllers
 
             return Ok(availableJourneys);
         }
+
+
 
 
         // DELETE: api/Journeys/5

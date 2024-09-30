@@ -130,10 +130,7 @@ public partial class BusBookingContext : DbContext
             entity.ToTable("Journey");
 
             entity.Property(e => e.JourneyId).HasColumnName("journeyId");
-            entity.Property(e => e.ArrivalDate)
-                .HasMaxLength(10)
-                .IsUnicode(false)
-                .HasColumnName("arrival_date");
+            entity.Property(e => e.ArrivalDate).HasColumnName("arrival_date");
             entity.Property(e => e.ArrivalTime)
                 .HasMaxLength(18)
                 .IsUnicode(false)
@@ -143,10 +140,7 @@ public partial class BusBookingContext : DbContext
                 .HasMaxLength(30)
                 .IsUnicode(false)
                 .HasColumnName("busNumber");
-            entity.Property(e => e.DepartureDate)
-                .HasMaxLength(10)
-                .IsUnicode(false)
-                .HasColumnName("departure_date");
+            entity.Property(e => e.DepartureDate).HasColumnName("departure_date");
             entity.Property(e => e.DepartureTime)
                 .HasMaxLength(18)
                 .IsUnicode(false)
