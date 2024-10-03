@@ -59,8 +59,6 @@ namespace BusBooking.Server.Controllers
             return Ok(route);
         }
 
-
-
         [HttpGet("GetRoutes")]
         public async Task<IActionResult> GetRoutes()
         {

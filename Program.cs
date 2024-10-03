@@ -93,6 +93,7 @@ namespace BusBooking.Server
             // Add authentication and authorization
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseStaticFiles(); // Enable serving static files from wwwroot
 
             // Endpoint routing
             app.UseEndpoints(endpoints =>

@@ -62,6 +62,32 @@ namespace BusBooking.Server.Controllers
             return Ok(journey);
         }
 
+        [HttpGet("getbuses")]
+        public async Task<ActionResult<IEnumerable<Journey>>> GetJourneysAfterCurrentDateAsync()
+        {
+            var currentDate = DateOnly.FromDateTime(DateTime.Now); // Convert current DateTime to DateOnly
+
+            var journeys = await _context.Journeys
+                .Include(j => j.Route) // Include the Route entity
+                .Include(j => j.Bus)   // Include the Bus entity
+                .ThenInclude(b => b.BusImages) // Include related BusImages
+                .Where(j => j.DepartureDate > currentDate) // Filter journeys after the current date
+                .GroupBy(j => j.BusId) // Group by BusId to remove duplicates
+                .Select(g => g.First()) // Select the first entry in each group (unique BusId)
+                .ToListAsync(); // Return the list of matching journeys
+
+            if (journeys == null || journeys.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(journeys);
+        }
+
+
+
+
+
         //// GET: api/Journeys/user/{userId}
         //[HttpGet("user/{userId}")]
         //public async Task<ActionResult<IEnumerable<Journey>>> GetJourneysByUserId(int userId)
@@ -86,7 +112,7 @@ namespace BusBooking.Server.Controllers
             [FromQuery] string? startDate = null,
             [FromQuery] string? endDate = null)
         {
-            Console.WriteLine($"API called with User ID: {userId}");
+
 
             // Validate pageNumber and pageSize
             if (pageNumber <= 0) pageNumber = 1;
@@ -276,6 +302,29 @@ namespace BusBooking.Server.Controllers
             }
 
             return Ok(availableJourneys);
+        }
+
+
+        [HttpGet("available-bus/{busId}")]
+        public async Task<ActionResult<IEnumerable<Journey>>> GetAvailableJourneys(int busId)
+        {
+            // Get today's date
+            var todayDate = DateOnly.FromDateTime(DateTime.Today);
+
+            // Query available journeys by matching busId and departure dates on or after today
+            var availableJourneys = await _context.Journeys
+                .Include(j => j.Route)  // Include the related Route entity
+                .Include(j => j.Bus)    // Include the related Bus entity
+                .Where(j => j.BusId == busId && j.DepartureDate >= todayDate) // Filter by busId and dates on or after today
+                .ToListAsync();
+
+            // Handle no results found
+            if (availableJourneys == null || !availableJourneys.Any())
+            {
+                return NotFound($"No journeys found for bus ID {busId} on or after {todayDate}.");
+            }
+
+            return Ok(availableJourneys); // Return the available journeys
         }
 
 

@@ -21,6 +21,8 @@ public partial class BusBookingContext : DbContext
 
     public virtual DbSet<BusImage> BusImages { get; set; }
 
+    public virtual DbSet<City> Cities { get; set; }
+
     public virtual DbSet<Deck> Decks { get; set; }
 
     public virtual DbSet<Journey> Journeys { get; set; }
@@ -109,6 +111,19 @@ public partial class BusBookingContext : DbContext
                 .HasForeignKey(d => d.BusId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__BusImages__BusId__5FB337D6");
+        });
+
+        modelBuilder.Entity<City>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__cities__3213E83F66FE8E29");
+
+            entity.ToTable("cities");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.City1)
+                .HasMaxLength(220)
+                .IsUnicode(false)
+                .HasColumnName("city");
         });
 
         modelBuilder.Entity<Deck>(entity =>
